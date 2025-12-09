@@ -1,18 +1,20 @@
-function App() {
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-  return (
-    <>
-    this is main routing page
-      <div className="flex w-100">
-        <div className="text-3xl font-bold underline bg-red-500">
-          Hello Alex
-        </div>
-        <div className="text-3xl font-bold underline bg-green-500">
-          Hello Nelish
-        </div>
-      </div>
-    </>
+function App() {
+  return(
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home/>}></Route>
+        <Route path='/login' element={<Login/>}></Route>
+        <Route path='/register' element={<Register/>}></Route>
+        <Route path='/about' element={<div>about</div>}></Route>
+        <Route path='/contact' element={<div>contact</div>}></Route>
+      </Routes>
+    </Router>
   )
 }
 
-export default App
+export default App;
