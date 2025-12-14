@@ -2,8 +2,8 @@ const express=require('express');
 const app=express();
 const port=3000;
 
-app.use('/api/user/'.require('./routes/router'))
-app.use('/api/book/'.require('./routes/bookroute'))
+app.use('/api/user/',require('./routes/route'));
+// app.use('/api/book/',require('./routes/bookroute'));
 
 app.get('/',(req,res)=>{
     res.json({message:'Welcome to the Home Page from backend! change vayo wow'});
