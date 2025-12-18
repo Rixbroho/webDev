@@ -23,6 +23,11 @@ const User=sequelize.define('User',{
     password:{
         type:DataTypes.STRING,
         allowNull:false,
+    },
+},
+    {
+        tableName:'users',
+        timestamps:true,
     }
 
-});
+);
