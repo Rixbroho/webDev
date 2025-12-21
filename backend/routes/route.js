@@ -1,9 +1,9 @@
 const express = require('express').Router();
 
-const{addUser}=require("../controllers/userController")
+const{addUser,getAllUser}=require("../controllers/userController")
 
-
-// express.get("/getalluser",getAllUser)
 express.post("/user",addUser)
+express.get("/getalluser",getAllUser)
+
 
 module.exports=express;

@@ -1,4 +1,5 @@
 const User=require("../models/userModel.js")
+const bcrypt=require("bcrypt");
 
 const addUser=async(req,res)=>{
     try{
@@ -7,10 +8,13 @@ const addUser=async(req,res)=>{
             return res.status(400).json({message:"All fields are required"});
         }
 
+        const hassed = await bcrypt.hash(password,10);
+        console.log(hassed);
+
         const newUser=await User.create({
             username,
             email,
-            password
+            password: hassed
         });
 
         res.status(201).json({
@@ -23,6 +27,13 @@ const addUser=async(req,res)=>{
     }
 }
 
+const getAllUser=async(req,res)=>{
+    const users=await User.findAll();
+    res.json({users,message:"This is the get all user"});
+}
+
+// const 
+
 module.exports={
-addUser
+    getAllUser,addUser
 }
