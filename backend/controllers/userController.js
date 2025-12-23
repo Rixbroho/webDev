@@ -8,6 +8,12 @@ const addUser=async(req,res)=>{
             return res.status(400).json({message:"All fields are required"});
         }
 
+        const isUser = await User.findOne({where:{username}});
+        const isemail = await User.findOne({where:{email}});
+        if(isUser||isemail){
+            return res.json({message:"User already exists"});
+        }
+
         const hassed = await bcrypt.hash(password,10);
         console.log(hassed);
 
@@ -27,13 +33,38 @@ const addUser=async(req,res)=>{
     }
 }
 
+
+
 const getAllUser=async(req,res)=>{
-    const users=await User.findAll();
-    res.json({users,message:"This is the get all user"});
+    try{
+        const users=await User.findAll({attributes:{exclude:["password"]}});
+        return res.json({users,message:"User fetched successfully"});        
+    }catch(error){
+        return res.status(500).json({message:"Error fetching users",error: error.message});
+    }
 }
 
-// const 
+const getUsersById=async(req,res)=>{
+    try{
+        const {id}=req.params.id;
+        const user=await User.findByPk(id);
+        return res.json({
+            user:{id:user.id,username:user.username},
+            message:"User fetched successfully"
+        });
+    }catch(error){
+        return res.status(500).json({
+            message:"Error fetching user",
+            error: error.message
+        });
+    }
+}
+
+const getActiveUsers = async (req, res) => {
+  res.json({ message: "Get active users - to be implemented" });
+};
+
 
 module.exports={
-    getAllUser,addUser
+    getAllUser,addUser,getUsersById,getActiveUsers 
 }
