@@ -124,8 +124,29 @@ const deleteUser=async(req,res)=>{
 
 const logInUser=async(req,res)=>{
     try{
-        const {username,password}=req.body;
-        
+        const {email,password}=req.body;
+        const user=await User.findOne({where:{email}});
+        if(!user){
+            return res.status(404).json({
+                message:"User not found"
+            })
+        }
+
+        const isvalidUser=await bcrypt.compare(password,user.password);
+
+        if(!isvalidUser){
+            return res.status(400).json({message:"Invalid credentials"});
+        }
+
+        return res.status(200).json({
+            message:"Login successful",
+            user:{
+                id:user.id,
+                username:user.username,
+                email:user.email
+            }
+        });
+
 
     }catch(error){
         return res.status(500).json({
@@ -136,5 +157,6 @@ const logInUser=async(req,res)=>{
 }
 
 module.exports={
-    getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser
+    getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser,
+    logInUser
 }
