@@ -1,4 +1,5 @@
-const User=require("../models/userModel.js")
+const User=require("../models/userModel.js");
+const jwt=require("jsonwebtoken");
 const bcrypt=require("bcrypt");
 
 const addUser=async(req,res)=>{
@@ -32,7 +33,6 @@ const addUser=async(req,res)=>{
         res.status(500).json({message:"Error creating user",error: error.message});
     }
 }
-
 
 
 const getAllUser=async(req,res)=>{
@@ -138,13 +138,19 @@ const logInUser=async(req,res)=>{
             return res.status(400).json({message:"Invalid credentials"});
         }
 
-        return res.status(200).json({
-            message:"Login successful",
-            user:{
+        const token=jwt.sign(
+            {
                 id:user.id,
+                role:user.role,
                 username:user.username,
                 email:user.email
-            }
+            },process.env.JWT_SECRET,
+            {expiresIn:"7d"}
+        );
+
+        return res.status(200).json({
+            message:"Login successful",
+            token
         });
 
 
