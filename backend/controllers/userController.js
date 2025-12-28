@@ -75,6 +75,15 @@ const updateUser=async(req,res)=>{
         if(!user){
             return res.status(404).json({message:"User not found"});
         }
+
+        if(username){
+            const isexistinguser=await User.findOne({where:{username}});
+            if(isexistinguser && isexistinguser.id!==user.id){
+                return res.status(400).json({message:"User with that username exists"});
+            }
+        }
+
+
         let hassedPassword=user.password;
         if(password){
             hassedPassword=await bcrypt.hash(password,10);
@@ -91,7 +100,41 @@ const updateUser=async(req,res)=>{
     }
 }
 
+const deleteUser=async(req,res)=>{
+    try{
+        const id=req.params.id;
+        const user= await User.findByPk(id);
+        if(!user){
+            return res.status(404).json({message:"User not found"});
+        }
+
+        await user.destroy();
+
+        return res.json({
+            // user:{id:user.id,username:user.username},
+            message:"User deleted"
+        });
+    }catch(error){
+        return res.status(500).json({
+            message:"Error",
+            error:error.message
+        })
+    }
+}
+
+const logInUser=async(req,res)=>{
+    try{
+        const {username,password}=req.body;
+        
+
+    }catch(error){
+        return res.status(500).json({
+            message:"Error logging in",
+            error:error.message
+        });
+    }
+}
 
 module.exports={
-    getAllUser,addUser,getUsersById,getActiveUsers,updateUser
+    getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser
 }
