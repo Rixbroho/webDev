@@ -6,3 +6,4 @@ npm i dotenv
 npm i sequelize pg pg-hstore
 npm i bcrypt
 npm i jsonwebtoken
+npm i react-hot-toast
