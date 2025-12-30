@@ -63,6 +63,7 @@ const Register = () => {
       toast.error("Passwords do not match");
       return false;
     }
+    
     return true;
   }
 
