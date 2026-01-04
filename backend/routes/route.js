@@ -1,10 +1,12 @@
 const express = require('express').Router();
+const multer=require("multer");
+const upload=multer();
 
 const{addUser,getAllUser,getUsersById,getActiveUsers,updateUser,deleteUser,
     logInUser
 }=require("../controllers/userController")
 
-express.post("/user",addUser)
+express.post("/user",upload.none(),addUser)
 express.get("/getalluser",getAllUser)
 express.get("/getusersbyid/:id",getUsersById)
 express.get("/getactiveusers",getActiveUsers)

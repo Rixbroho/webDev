@@ -7,3 +7,6 @@ npm i sequelize pg pg-hstore
 npm i bcrypt
 npm i jsonwebtoken
 npm i react-hot-toast
+npm i multer
+npm i cors
+npm install axios

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { createUserApi } from '../services/api';
 
 
 const Register = () => {
@@ -18,19 +19,19 @@ const Register = () => {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validation()) return
 
     try{
-      toast.success("Registration successful");
-      setFormData({
-        username:"",
-        email:"",
-        password:"",
-        confirmPassword:"",
-        role:"user",
-      })
+      const response = await createUserApi(formData);
+      
+      if(response.data.success){
+        toast.success("Registration successful");
+      }
+      else{
+        toast.error("error in registration");
+      }
     }catch(err){
       toast.error("Registration failed");
     }
