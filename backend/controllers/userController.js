@@ -6,13 +6,13 @@ const addUser=async(req,res)=>{
     try{
         const {username,email,password}=req.body;
         if(!username || !email || !password){
-            return res.status(400).json({message:"All fields are required"});
+            return res.status(400).json({success:false,message:"All fields are required"});
         }
 
         const isUser = await User.findOne({where:{username}});
         const isemail = await User.findOne({where:{email}});
         if(isUser||isemail){
-            return res.json({message:"User already exists"});
+            return res.json({success:false,message:"User already exists"});
         }
 
         const hassed = await bcrypt.hash(password,10);
@@ -129,6 +129,7 @@ const logInUser=async(req,res)=>{
         const user=await User.findOne({where:{email}});
         if(!user){
             return res.status(404).json({
+                success:false,
                 message:"User not found"
             })
         }
@@ -136,7 +137,7 @@ const logInUser=async(req,res)=>{
         const isvalidUser=await bcrypt.compare(password,user.password);
 
         if(!isvalidUser){
-            return res.status(400).json({message:"Invalid credentials"});
+            return res.status(400).json({success:false,message:"Invalid credentials"});
         }
 
         const token=jwt.sign(
@@ -150,6 +151,7 @@ const logInUser=async(req,res)=>{
         );
 
         return res.status(200).json({
+            success:true,
             message:"Login successful",
             token,
             user:{id:user.id,username:user.username,email:user.email,role:user.role}

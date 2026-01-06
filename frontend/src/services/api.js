@@ -23,5 +23,5 @@ const config={
 };
 
 export const createUserApi=(data)=>ApiFormData.post('api/user/user',data);
-export const loginUserApi=(data)=>Api.post('api/users/loginuser',data);
-export const getUserProfileApi=()=>Api.get('api/users/profile',config);
+export const loginUserApi=(data)=>Api.post('api/user/loginuser',data);
+export const getUserProfileApi=()=>Api.get('api/user/profile',config);
