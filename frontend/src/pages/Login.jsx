@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { loginUserApi } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
 
 
 const Login = () => {
@@ -8,6 +10,7 @@ const Login = () => {
     email: '',
     password: '',
   })
+  const navigate= useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -25,12 +28,18 @@ const Login = () => {
       
       if(response?.data?.success){
         localStorage.setItem("token",response?.data?.token);
-        toast.success("Login successful");
         let decoded;
         try{
-          decoded=jwt_decode(response?.data?.token);
+          decoded=jwtDecode(response?.data?.token);
+          toast.success("Login successful");
+          if(decoded.role==="admin"){
+            navigate("/admindash");
+          }else{
+            navigate("/userdash");
+          }
         }catch{ 
           console.error("Invalid token");
+          toast.error("Invalid token received");
         }
       }
       else{
@@ -38,11 +47,6 @@ const Login = () => {
       }
     }catch(err){
       toast.error("Login failed");
-    }
-    if(decoded.user.role==="admin"){
-      navigate("/admindash");
-    }else{
-      navigate("/userdash");
     }
     console.log(formData) // send to backend later
   }
