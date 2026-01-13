@@ -39,7 +39,7 @@ const addUser=async(req,res)=>{
 const getAllUser=async(req,res)=>{
     try{
         const users=await User.findAll({attributes:{exclude:["password"]}});
-        return res.json({users,message:"User fetched successfully"});        
+        return res.json({success:true,users,message:"User fetched successfully"});        
     }catch(error){
         return res.status(500).json({message:"Error fetching users",error: error.message});
     }
@@ -106,12 +106,13 @@ const deleteUser=async(req,res)=>{
         const id=req.params.id;
         const user= await User.findByPk(id);
         if(!user){
-            return res.status(404).json({message:"User not found"});
+            return res.status(404).json({success:false,message:"User not found"});
         }
 
         await user.destroy();
 
-        return res.json({
+        return res.status(200).json({
+            success:true,
             // user:{id:user.id,username:user.username},
             message:"User deleted"
         });

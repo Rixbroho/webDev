@@ -24,4 +24,5 @@ const config={
 
 export const createUserApi=(data)=>ApiFormData.post('api/user/user',data);
 export const loginUserApi=(data)=>Api.post('api/user/loginuser',data);
-export const getUserProfileApi=()=>Api.get('api/user/profile',config);
+export const getUser = () => Api.get("/api/user/getallUsers")
+export const deleteUserById = (data) => Api.delete(`/api/user/deleteuser/${data}`)

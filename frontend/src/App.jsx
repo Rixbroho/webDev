@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Header from './pages/component/Header';
 import Footer from './pages/component/Footer';
 import { Toaster } from 'react-hot-toast';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return(
@@ -18,7 +19,7 @@ function App() {
         <Route path='/about' element={<div>about</div>}></Route>
         <Route path='/contact' element={<div>contact</div>}></Route>
         <Route path='/userdash' element={<div>User dashboard</div>}></Route>
-        <Route path='/admindash' element={<div>Admin dashboard</div>}></Route>
+        <Route path='/admindash' element={<Dashboard/>}></Route>
       </Routes>
       <Footer/>
     </Router>
