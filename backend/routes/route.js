@@ -18,6 +18,7 @@ const isAdmin = require("../helpers/isAdmin");
 // express.post("/login",logInUser);
 
 express.post("/user",upload.none(),addUser)
+express.get("/me",authGuard,getMe)
 express.get("/getalluser",authGuard,isAdmin,getAllUser)
 express.get("/getusersbyid/:id",authGuard,isAdmin,getUsersById)
 express.get("/getactiveusers",authGuard,getActiveUsers)

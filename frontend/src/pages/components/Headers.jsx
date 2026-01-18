@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getUser } from "../../services/api";
+import { getMe } from "../../services/api";
 import { getToken } from "../../protected/Auth";
  
 const Headers = () => {
@@ -10,7 +10,7 @@ const Headers = () => {
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const response = await getUser();
+        const response = await getMe();
         setUser(response.data.user);
       } catch (error) {
         localStorage.removeItem("token-37c");
