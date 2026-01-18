@@ -33,10 +33,11 @@ const Login = () => {
           decoded=jwtDecode(response?.data?.token);
           toast.success("Login successful");
           if(decoded.role==="admin"){
-            navigate("/admindash");
+            navigate("/admindash",{replace:true});
           }else{
-            navigate("/userdash");
+            navigate("/userdash",{replace:true});
           }
+          window.location.reload();
         }catch{ 
           console.error("Invalid token");
           toast.error("Invalid token received");
@@ -45,6 +46,7 @@ const Login = () => {
       else{
         toast.error("error in login");
       }
+
     }catch(err){
       toast.error("Login failed");
     }
