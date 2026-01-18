@@ -50,9 +50,10 @@ const getUsersById=async(req,res)=>{
         const id=req.params.id;
         const user=await User.findByPk(id);
         if(!user){
-            return res.status(404).json({message:"User not found"});
+            return res.status(404).json({success:false,message:"User not found"});
         }
         return res.json({
+            success:true,
             user:{id:user.id,username:user.username},
             message:"User fetched successfully"
         });
@@ -80,7 +81,7 @@ const updateUser=async(req,res)=>{
         if(username){
             const isexistinguser=await User.findOne({where:{username}});
             if(isexistinguser && isexistinguser.id!==user.id){
-                return res.status(400).json({message:"User with that username exists"});
+                return res.status(400).json({success:false,message:"User with that username exists"});
             }
         }
 
@@ -94,10 +95,11 @@ const updateUser=async(req,res)=>{
             email:email|| user.email,
             password:hassedPassword,
         });
-        return res.status(200).json({message:"User updated successfully",user});
+        return res.status(200).json({success:true,message:"User updated successfully",user:{
+            id:user.id
+        }});
     }catch(error){
-        return res.status(500).json
-
+        return res.status(500).json({message:"Error updating user",error: error.message});
     }
 }
 
@@ -167,7 +169,29 @@ const logInUser=async(req,res)=>{
     }
 }
 
+const getMe = async (req, res) => {
+  const id=req.user.id
+  try {
+    const user = await User.findByPk(id)
+    return res.json({ 
+        success:true,
+        user: { 
+            id: user.id, 
+            username: user.username, 
+            email: user.email, 
+            // role: user.role 
+        },
+        message: "User fetched successfully" 
+    })
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error fetching users",
+      error: error.message,
+    });
+  }
+}
+
 module.exports={
     getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser,
-    logInUser
+    logInUser,getMe
 }
