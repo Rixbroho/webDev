@@ -9,21 +9,21 @@ const{getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser,
 const authGuard = require("../helpers/authguagrd");
 const isAdmin = require("../helpers/isAdmin");
 
-// express.get("/getallUsers",authGuard,isAdmin,getAllUser);
-// express.get("/getMe",authGuard,getMe);
-// express.post("/register",addUser);
-// express.get("/getuserByid/:uid",authGuard,isAdmin,getUsersById);
-// express.put("/updateUserByid/:id",authGuard,isAdmin,updateUser);
-// express.delete("/deleteuser/:id",authGuard,isAdmin,deleteUser);
-// express.post("/login",logInUser);
+express.get("/getallUsers",authGuard,isAdmin,getAllUser);
+express.get("/getMe",authGuard,getMe);
+express.post("/register",addUser);
+express.get("/getuserByid/:uid",authGuard,isAdmin,getUsersById);
+express.put("/updateUserByid/:id",authGuard,isAdmin,updateUser);
+express.delete("/deleteuser/:id",authGuard,isAdmin,deleteUser);
+express.post("/login",logInUser);
 
-express.post("/user",upload.none(),addUser)
-express.get("/me",authGuard,getMe)
-express.get("/getalluser",authGuard,isAdmin,getAllUser)
-express.get("/getusersbyid/:id",authGuard,isAdmin,getUsersById)
-express.get("/getactiveusers",authGuard,getActiveUsers)
-express.put("/updateuserbyid/:id",authGuard,isAdmin,updateUser)
-express.delete("/deleteuserbyid/:id",authGuard,isAdmin,deleteUser)
-express.post("/loginuser",logInUser)
+// express.post("/user",upload.none(),addUser)
+// express.get("/me",authGuard,getMe)
+// express.get("/getalluser",authGuard,isAdmin,getAllUser)
+// express.get("/getusersbyid/:id",authGuard,isAdmin,getUsersById)
+// express.get("/getactiveusers",authGuard,getActiveUsers)
+// express.put("/updateuserbyid/:id",authGuard,isAdmin,updateUser)
+// express.delete("/deleteuserbyid/:id",authGuard,isAdmin,deleteUser)
+// express.post("/loginuser",logInUser)
 
 module.exports=express;

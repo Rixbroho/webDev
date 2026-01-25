@@ -5,8 +5,9 @@ import { Toaster } from 'react-hot-toast';
 import Headers from './pages/components/Headers';
 import Footers from './pages/components/Footers';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Edituser from './pages/EditUser';
+import Dashboard from './pages/Dashboard'; 
+import AdminAddProduct from './pages/AdminAddProduct'; 
+import EditUser from './pages/EditUser';
 import ProtectedRoute from './protected/ProtectedRoute'
 function App() {
   // block for js 
@@ -26,13 +27,23 @@ function App() {
           />} />
 
         <Route path="/edituser/:id" element={
-          <ProtectedRoute allowedRoles={['admin']} element={<Edituser />}
+          <ProtectedRoute allowedRoles={['admin']} element={<EditUser />}
           />
         } />
+        <Route
+          path="/add-product"
+          element={
+            <ProtectedRoute
+              allowedRoles={['admin']}
+              element={<AdminAddProduct />}
+            />
+          }
+        />
+
       </Routes>
       <Footers />
     </Router>
   )
 }
 
-export default App;
+export default App
