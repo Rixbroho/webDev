@@ -1,0 +1,3 @@
+- [x] Edit backend/routes/reviewRoute.js to use import instead of require for authGuard
+- [x] Edit backend/routes/favoriteRoute.js to use import instead of require for authGuard
+- [x] Run npm start to verify the fix - Original error fixed, but port 3000 in use

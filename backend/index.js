@@ -1,31 +1,65 @@
-const express=require('express');
-const { sequelize,connectDB } = require('./database/db');
-const app=express();
-const port=3000;
+import express from "express";
 
-const cors=require('cors');
-app.use(cors({
-    origin:'http://localhost:5173',
-    // methods:['GET','POST','PUT','DELETE'],
-    credentials:true
-}));
+import { PrismaClient } from "@prisma/client";
+
+import cors from "cors";
+
+import userRoutes from "./routes/route.js";
+
+import restaurantRoutes from "./routes/restaurantRoute.js";
+
+import reviewRoutes from "./routes/reviewRoute.js";
+
+import favoriteRoutes from "./routes/favoriteRoute.js";
+
+const app = express();
+
+const port = 3000;
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
-app.use('/api/user/',require('./routes/route'));
-// app.use('/api/user/',require('./routes/productRoute'));
 
+// Initialize Prisma
 
-app.get('/',(req,res)=>{
-    res.json({message:'Welcome to the Home Page from backend! change vayo wow'});
+const prisma = new PrismaClient();
+
+app.locals.prisma = prisma;
+
+// Routes
+
+app.use("/api/user/", userRoutes);
+
+app.use("/api/restaurants/", restaurantRoutes);
+
+app.use("/api/reviews/", reviewRoutes);
+
+app.use("/api/favorites/", favoriteRoutes);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to the Restaurant Finder API!" });
 });
 
+const startServer = async () => {
+  try {
+    await prisma.$connect();
 
-const startServer=async()=>{
-    await connectDB();
-    await sequelize.sync({ alter:true });
-    app.listen(port,()=>{
-        console.log(`Server is running on port ${port}`);
+    console.log("Database connected successfully.");
+
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
     });
-}
+  } catch (error) {
+    console.error("Failed to connect to database:", error);
+
+    process.exit(1);
+  }
+};
 
 startServer();

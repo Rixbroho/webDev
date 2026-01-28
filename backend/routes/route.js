@@ -1,21 +1,31 @@
-const express = require('express').Router();
-const multer=require("multer");
-const upload=multer();
+import express from "express";
+import multer from "multer";
 
-const{getAllUser,addUser,getUsersById,getActiveUsers,updateUser,deleteUser,
-    logInUser,getMe
-}=require("../controllers/userController");
+import {
+  getAllUser,
+  addUser,
+  getUsersById,
+  getActiveUsers,
+  updateUser,
+  deleteUser,
+  logInUser,
+  getMe,
+} from "../controllers/userController.js";
 
-const authGuard = require("../helpers/authguagrd");
-const isAdmin = require("../helpers/isAdmin");
+import authGuard from "../helpers/authGuard.js";
+import isAdmin from "../helpers/isAdmin.js";
 
-express.get("/getallUsers",authGuard,isAdmin,getAllUser);
-express.get("/getMe",authGuard,getMe);
-express.post("/register",addUser);
-express.get("/getuserByid/:uid",authGuard,isAdmin,getUsersById);
-express.put("/updateUserByid/:id",authGuard,isAdmin,updateUser);
-express.delete("/deleteuser/:id",authGuard,isAdmin,deleteUser);
-express.post("/login",logInUser);
+const router = express.Router();
+const upload = multer();
+
+router.get("/getallUsers", authGuard, isAdmin, getAllUser);
+router.get("/getMe", authGuard, getMe);
+router.get("/profile", authGuard, getMe); // Protected route using authGuard
+router.post("/register", addUser);
+router.get("/getuserByid/:uid", authGuard, isAdmin, getUsersById);
+router.put("/updateUserByid/:id", authGuard, isAdmin, updateUser);
+router.delete("/deleteuser/:id", authGuard, isAdmin, deleteUser);
+router.post("/login", logInUser);
 
 // express.post("/user",upload.none(),addUser)
 // express.get("/me",authGuard,getMe)
@@ -26,4 +36,4 @@ express.post("/login",logInUser);
 // express.delete("/deleteuserbyid/:id",authGuard,isAdmin,deleteUser)
 // express.post("/loginuser",logInUser)
 
-module.exports=express;
+export default router;

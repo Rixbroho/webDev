@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  reviews   Review[]
+  favorites Favorite[]
+
+  @@map("users")
+}
+
+model Restaurant {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
+  cuisine      String
+  address      String
+  city         String
+  latitude     Float?
+  longitude    Float?
+  priceRange   String   @map("price_range")
+  imageUrl     String?  @map("image_url")
+  averageRating Float?  @default(0) @map("average_rating")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  reviews      Review[]
+  favorites    Favorite[]
+
+  @@map("restaurants")
+}
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int      @map("restaurant_id")
+  rating       Int      @db.SmallInt
+  comment      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Favorite {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int      @map("restaurant_id")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+  @@map("favorites")
+}
