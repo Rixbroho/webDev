@@ -10,6 +10,8 @@ import Restaurants from "./pages/Restaurants";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import UserDashboard from "./pages/UserDashboard";
 import ProtectedRoute from "./protected/ProtectedRoute";
 
 function App() {
@@ -26,11 +28,33 @@ function App() {
           <Route path="/restaurants/:id" element={<RestaurantDetails />} />
           <Route
             path="/favorites"
-            element={<ProtectedRoute element={<Favorites />} />}
+            element={
+              <ProtectedRoute element={<Favorites />} allowedRoles={["user"]} />
+            }
           />
           <Route
             path="/profile"
-            element={<ProtectedRoute element={<Profile />} />}
+            element={
+              <ProtectedRoute element={<Profile />} allowedRoles={["user"]} />
+            }
+          />
+          <Route
+            path="/admindash"
+            element={
+              <ProtectedRoute
+                element={<Dashboard />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/userdash"
+            element={
+              <ProtectedRoute
+                element={<UserDashboard />}
+                allowedRoles={["user"]}
+              />
+            }
           />
         </Routes>
         <Footers />

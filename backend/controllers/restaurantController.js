@@ -126,4 +126,72 @@ const createRestaurant = async (req, res) => {
   }
 };
 
-export { getAllRestaurants, getRestaurantById, createRestaurant };
+const getRecommendedRestaurants = async (req, res) => {
+  try {
+    const prisma = req.app.locals.prisma;
+    const userId = req.user.id;
+
+    // Get user's favorite cuisines from reviews
+    const userReviews = await prisma.review.findMany({
+      where: { userId },
+      include: {
+        restaurant: {
+          select: { cuisine: true },
+        },
+      },
+    });
+
+    const cuisineCounts = {};
+    userReviews.forEach((review) => {
+      const cuisine = review.restaurant.cuisine;
+      cuisineCounts[cuisine] = (cuisineCounts[cuisine] || 0) + 1;
+    });
+
+    const favoriteCuisine = Object.keys(cuisineCounts).reduce(
+      (a, b) => (cuisineCounts[a] > cuisineCounts[b] ? a : b),
+      null,
+    );
+
+    let recommendations = [];
+    if (favoriteCuisine) {
+      recommendations = await prisma.restaurant.findMany({
+        where: { cuisine: favoriteCuisine },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          cuisine: true,
+          city: true,
+          imageUrl: true,
+          averageRating: true,
+        },
+      });
+    }
+
+    // If no reviews, return random restaurants
+    if (recommendations.length === 0) {
+      recommendations = await prisma.restaurant.findMany({
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          cuisine: true,
+          city: true,
+          imageUrl: true,
+          averageRating: true,
+        },
+      });
+    }
+
+    res.json({ success: true, recommendations });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export {
+  getAllRestaurants,
+  getRestaurantById,
+  createRestaurant,
+  getRecommendedRestaurants,
+};
