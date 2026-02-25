@@ -1,28 +1,36 @@
-const {Sequelize} = require('sequelize');
-require('dotenv').config();
+const { Sequelize } = require("sequelize");
+require("dotenv").config();
 
-const isTestEnvironment=process.env.NODE_ENV==='test';
-console.log(`Running in ${isTestEnvironment ? 'test' : 'development'} environment`);    
+// Validate required environment variables
+const dbName = process.env.DB_NAME;
+const dbUser = process.env.DB_USER;
+const dbPass = process.env.DB_PASS;
+const dbHost = process.env.DB_HOST;
 
-const sequelize = new Sequelize(
-    isTestEnvironment ? process.env.TEST_DB_NAME : process.env.DB_NAME, 
-    process.env.DB_USER, 
-    process.env.DB_PASSWORD, 
-    {
-        host: process.env.DB_HOST,
-        dialect: 'postgres',
-        logging : false,
-        port : process.env.DB_PORT || 5432,
-    }
-); 
+if (!dbName || !dbUser || !dbPass || !dbHost) {
+  console.error("Missing required database configuration:");
+  if (!dbName) console.error("  - DB_NAME is not set in .env");
+  if (!dbUser) console.error("  - DB_USER is not set in .env");
+  if (!dbPass) console.error("  - DB_PASS is not set in .env");
+  if (!dbHost) console.error("  - DB_HOST is not set in .env");
+  process.exit(1);
+}
+
+const sequelize = new Sequelize(dbName, dbUser, dbPass, {
+  host: dbHost,
+  dialect: "postgres",
+  logging: false,
+  port: process.env.DB_PORT || 5432,
+});
 
 const connectDB = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('Database connected successfully.');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
-}
+  try {
+    await sequelize.authenticate();
+    console.log("PostgreSQL connected successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error.message);
+    process.exit(1);
+  }
+};
 
 module.exports = { sequelize, connectDB };

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "workspaces": [
     "server",
-    "client"
+    "frontend"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",

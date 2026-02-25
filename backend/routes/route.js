@@ -1,7 +1,9 @@
-import express from "express";
-import multer from "multer";
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const upload = multer();
 
-import {
+const {
   getAllUser,
   addUser,
   getUsersById,
@@ -10,30 +12,29 @@ import {
   deleteUser,
   logInUser,
   getMe,
-} from "../controllers/userController.js";
+  forgotPassword,
+  verifyOtp,
+  resetPassword,
+  changePassword,
+} = require("../controllers/userController");
 
-import authGuard from "../helpers/authGuard.js";
-import isAdmin from "../helpers/isAdmin.js";
+const authGuard = require("../helpers/authguagrd");
+const isAdmin = require("../helpers/isAdmin");
 
-const router = express.Router();
-const upload = multer();
+// Change password (authenticated)
+router.post('/changepassword', authGuard, changePassword);
 
-router.get("/getallUsers", authGuard, isAdmin, getAllUser);
-router.get("/getMe", authGuard, getMe);
-router.get("/profile", authGuard, getMe); // Protected route using authGuard
-router.post("/register", addUser);
-router.get("/getuserByid/:uid", authGuard, isAdmin, getUsersById);
-router.put("/updateUserByid/:id", authGuard, isAdmin, updateUser);
-router.delete("/deleteuser/:id", authGuard, isAdmin, deleteUser);
-router.post("/login", logInUser);
+router.post("/user", upload.none(), addUser);
+router.get("/me", authGuard, getMe);
+router.post("/forgotpassword", forgotPassword);
+router.post("/verifyotp", verifyOtp);
+router.post("/resetpassword", resetPassword);
+router.get("/getalluser", authGuard, isAdmin, getAllUser);
+router.get("/getusersbyid/:id", authGuard, isAdmin, getUsersById);
+router.get("/getactiveusers", authGuard, getActiveUsers);
+// Allow authenticated users to update their own profile; controller will enforce permissions
+router.put("/updateuserbyid/:id", authGuard, updateUser);
+router.delete("/deleteuserbyid/:id", authGuard, isAdmin, deleteUser);
+router.post("/loginuser", logInUser);
 
-// express.post("/user",upload.none(),addUser)
-// express.get("/me",authGuard,getMe)
-// express.get("/getalluser",authGuard,isAdmin,getAllUser)
-// express.get("/getusersbyid/:id",authGuard,isAdmin,getUsersById)
-// express.get("/getactiveusers",authGuard,getActiveUsers)
-// express.put("/updateuserbyid/:id",authGuard,isAdmin,updateUser)
-// express.delete("/deleteuserbyid/:id",authGuard,isAdmin,deleteUser)
-// express.post("/loginuser",logInUser)
-
-export default router;
+module.exports = router;

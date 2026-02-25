@@ -1,65 +1,65 @@
-import express from "express";
+require('dotenv').config();
+const express=require('express');
+const { sequelize,connectDB } = require('./database/db');
+const path = require('path');
+const app=express();
+const port=3000;
+const bookingRoutes = require("./routes/bookingRoute");
 
-import { PrismaClient } from "@prisma/client";
-
-import cors from "cors";
-
-import userRoutes from "./routes/route.js";
-
-import restaurantRoutes from "./routes/restaurantRoute.js";
-
-import reviewRoutes from "./routes/reviewRoute.js";
-
-import favoriteRoutes from "./routes/favoriteRoute.js";
-
-const app = express();
-
-const port = 3000;
-
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-
-    credentials: true,
-  }),
-);
+const cors=require('cors');
+app.use(cors({
+    origin:['http://localhost:5173', 'http://localhost:5174'],
+    // methods:['GET','POST','PUT','DELETE'],
+    credentials:true
+}));
 
 app.use(express.json());
 
-// Initialize Prisma
+// Serve static uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const prisma = new PrismaClient();
+app.use('/api/user/',require('./routes/route'));
+app.use('/api', require('./routes/venueRoute'));
+app.use("/api", bookingRoutes);
+// Admin settings routes
+app.use('/api/admin', require('./routes/settingsRoute'));
+// app.use('/api/user/',require('./routes/productRoute'));
 
-app.locals.prisma = prisma;
 
-// Routes
-
-app.use("/api/user/", userRoutes);
-
-app.use("/api/restaurants/", restaurantRoutes);
-
-app.use("/api/reviews/", reviewRoutes);
-
-app.use("/api/favorites/", favoriteRoutes);
-
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Restaurant Finder API!" });
+app.get('/',(req,res)=>{
+    res.json({message:'Welcome to the Home Page from backend! change vayo wow'});
 });
 
-const startServer = async () => {
-  try {
-    await prisma.$connect();
 
-    console.log("Database connected successfully.");
+const startServer=async()=>{
+    await connectDB();
+    await sequelize.sync({ alter:true });
 
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    // Development convenience: auto-create an admin if none exists
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const User = require('./models/usermodel');
+        const bcrypt = require('bcrypt');
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@local.test';
+        const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!';
+        const adminName = process.env.ADMIN_NAME || 'Administrator';
+
+        const existingAdmin = await User.findOne({ where: { role: 'admin' } });
+        if (!existingAdmin) {
+          const hashed = await bcrypt.hash(adminPassword, 10);
+          await User.create({ username: adminName, email: adminEmail, password: hashed, role: 'admin' });
+          console.log(`Created admin user: ${adminEmail} (password: ${adminPassword})`);
+        } else {
+          console.log(`Admin user exists: ${existingAdmin.email}`);
+        }
+      } catch (err) {
+        console.warn('Admin seeding failed:', err.message || err);
+      }
+    }
+
+    app.listen(port,()=>{
+        console.log(`Server is running on port ${port}`);
     });
-  } catch (error) {
-    console.error("Failed to connect to database:", error);
-
-    process.exit(1);
-  }
-};
+}
 
 startServer();

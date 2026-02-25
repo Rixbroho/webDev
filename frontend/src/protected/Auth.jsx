@@ -18,14 +18,14 @@ export const isTokenExpired = (token) => {
 export const getUserRole = () => {
     const token = getToken();
     if (!token || isTokenExpired(token)) {
-        localStorage.removeItem("token-37c");
+        localStorage.removeItem("token");
         return null;
     }
     try {
         const decoded = jwtDecode(token);
         return decoded.role;
     } catch (e) {
-        localStorage.removeItem("token-37c");
+        localStorage.removeItem("token");
         return null;
     }
 };
