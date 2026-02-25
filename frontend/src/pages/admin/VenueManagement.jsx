@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Edit, MapPin, Star, Search, X } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit,
+  MapPin,
+  Star,
+  Search,
+  X,
+  LayoutGrid,
+  Menu,
+  ChevronRight,
+  Utensils,
+} from "lucide-react";
 import {
   createRestaurant,
   getAllRestaurants,
@@ -8,33 +20,35 @@ import {
 } from "../../services/api";
 import { toast } from "react-toastify";
 
-const RestaurantManagement = () => {
-  const [restaurants, setRestaurants] = useState([]);
+const VenueManagement = () => {
+  const [venues, setVenues] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentRestaurantId, setCurrentRestaurantId] = useState(null);
+  const [currentVenueId, setCurrentVenueId] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Form State - Updated for restaurant fields
   const [formData, setFormData] = useState({
     name: "",
     location: "",
-    cuisine: "Italian",
-    priceRange: "$$",
+    type: "Italian",
+    price: "",
     rating: 5.0,
+    image: "🍽️",
+    cuisine: "",
     description: "",
     phone: "",
     email: "",
-    image: "🍽️",
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const fetchRestaurants = async () => {
+  const fetchVenues = async () => {
     try {
       const response = await getAllRestaurants();
       if (response.data.success) {
-        setRestaurants(response.data.restaurants);
+        setVenues(response.data.venues);
       }
     } catch (error) {
       toast.error("Failed to load restaurants");
@@ -42,7 +56,7 @@ const RestaurantManagement = () => {
   };
 
   useEffect(() => {
-    fetchRestaurants();
+    fetchVenues();
   }, []);
 
   const handleInputChange = (e) => {
@@ -62,19 +76,20 @@ const RestaurantManagement = () => {
     }
   };
 
-  const handleEditClick = (restaurant) => {
+  const handleEditClick = (venue) => {
     setIsEditing(true);
-    setCurrentRestaurantId(restaurant.id);
+    setCurrentVenueId(venue.id);
     setFormData({
-      name: restaurant.name,
-      location: restaurant.location,
-      cuisine: restaurant.cuisine,
-      priceRange: restaurant.priceRange,
-      rating: restaurant.rating,
-      description: restaurant.description || "",
-      phone: restaurant.phone || "",
-      email: restaurant.email || "",
-      image: restaurant.image || "🍽️",
+      name: venue.name,
+      location: venue.location,
+      type: venue.type,
+      price: venue.price,
+      rating: venue.rating,
+      image: venue.image || "🍽️",
+      cuisine: venue.cuisine || "",
+      description: venue.description || "",
+      phone: venue.phone || "",
+      email: venue.email || "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -87,7 +102,7 @@ const RestaurantManagement = () => {
         const response = await deleteRestaurant(id);
         if (response.data.success) {
           toast.success("Restaurant deleted!");
-          fetchRestaurants();
+          fetchVenues();
         }
       } catch (error) {
         toast.error("Failed to delete restaurant");
@@ -95,211 +110,329 @@ const RestaurantManagement = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!formData.name || !formData.location || !formData.priceRange) {
-      toast.warn("Please fill in all required fields");
-      return;
-    }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
+
     try {
-      const submitData = new FormData();
-      submitData.append("name", formData.name);
-      submitData.append("location", formData.location);
-      submitData.append("cuisine", formData.cuisine);
-      submitData.append("priceRange", formData.priceRange);
-      submitData.append("rating", formData.rating);
-      submitData.append("description", formData.description);
-      submitData.append("phone", formData.phone);
-      submitData.append("email", formData.email);
+      let data = new FormData();
+      data.append("name", formData.name);
+      data.append("location", formData.location);
+      data.append("type", formData.type);
+      data.append("price", formData.price);
+      data.append("rating", formData.rating);
+      data.append("image", formData.image);
+      data.append("cuisine", formData.cuisine);
+      data.append("description", formData.description);
+      data.append("phone", formData.phone);
+      data.append("email", formData.email);
+
       if (imageFile) {
-        submitData.append("image", imageFile);
+        data.append("image", imageFile);
       }
 
-      let response;
-      if (isEditing) {
-        response = await updateRestaurant(currentRestaurantId, submitData);
+      if (isEditing && currentVenueId) {
+        await updateRestaurant(currentVenueId, data);
+        toast.success("Restaurant updated!");
       } else {
-        response = await createRestaurant(submitData);
+        await createRestaurant(data);
+        toast.success("Restaurant created!");
       }
 
-      if (response.data.success) {
-        toast.success(isEditing ? "Restaurant updated!" : "Restaurant added!");
-        closeModal();
-        fetchRestaurants();
-      }
+      setIsModalOpen(false);
+      setFormData({
+        name: "",
+        location: "",
+        type: "Italian",
+        price: "",
+        rating: 5.0,
+        image: "🍽️",
+        cuisine: "",
+        description: "",
+        phone: "",
+        email: "",
+      });
+      setImageFile(null);
+      setImagePreview(null);
+      fetchVenues();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Operation failed");
+      toast.error(error.response?.data?.message || "Failed to save restaurant");
     } finally {
       setLoading(false);
     }
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setIsEditing(false);
-    setCurrentRestaurantId(null);
-    setFormData({
-      name: "",
-      location: "",
-      cuisine: "Italian",
-      priceRange: "$$",
-      rating: 5.0,
-      description: "",
-      phone: "",
-      email: "",
-      image: "🍽️",
-    });
-    setImageFile(null);
-    setImagePreview(null);
-  };
-
-  const filteredRestaurants = restaurants.filter(
-    (r) =>
-      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.location.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredVenues = venues.filter(
+    (v) =>
+      v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.type.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
-      <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-            Manage Restaurants
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Restaurant Management
           </h2>
+          <p className="text-gray-500">Manage your restaurant listings</p>
         </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-orange-500 text-white px-5 py-2.5 rounded-xl hover:bg-orange-600 flex items-center gap-2 font-bold transition-all active:scale-95"
-          >
-            <Plus size={20} />
-            <span>Add Restaurant</span>
-          </button>
-        </div>
-      </header>
-
-      <div className="p-4 md:p-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredRestaurants.map((restaurant) => (
-            <div
-              key={restaurant.id}
-              className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden group relative"
-            >
-              <div className="h-28 bg-orange-50 flex items-center justify-center text-5xl overflow-hidden">
-                {restaurant.image && restaurant.image.startsWith("/uploads") ? (
-                  <img
-                    src={`http://localhost:3000${restaurant.image}`}
-                    alt={restaurant.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  restaurant.image || "🍽️"
-                )}
-                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => handleEditClick(restaurant)}
-                    className="p-2 bg-white text-blue-500 rounded-full shadow-md hover:bg-blue-50"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(restaurant.id)}
-                    className="p-2 bg-white text-red-500 rounded-full shadow-md hover:bg-red-50"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 truncate">
-                  {restaurant.name}
-                </h3>
-                <p className="text-xs font-bold text-orange-600 uppercase mb-2">
-                  {restaurant.cuisine}
-                </p>
-                <div className="flex items-start gap-2 mb-4 text-gray-600">
-                  <MapPin size={16} className="text-orange-500 flex-shrink-0" />
-                  <p className="text-sm line-clamp-1">{restaurant.location}</p>
-                </div>
-                <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                  <span className="text-lg font-black text-gray-900">
-                    {restaurant.priceRange}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <button
+          onClick={() => {
+            setIsEditing(false);
+            setFormData({
+              name: "",
+              location: "",
+              type: "Italian",
+              price: "",
+              rating: 5.0,
+              image: "🍽️",
+              cuisine: "",
+              description: "",
+              phone: "",
+              email: "",
+            });
+            setImageFile(null);
+            setImagePreview(null);
+            setIsModalOpen(true);
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+        >
+          <Plus size={20} />
+          Add Restaurant
+        </button>
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Search */}
+      <div className="mb-6 relative">
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          size={20}
+        />
+        <input
+          type="text"
+          placeholder="Search restaurants..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+        />
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredVenues.map((venue) => (
           <div
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
-            onClick={closeModal}
-          ></div>
-          <div className="bg-white rounded-[2.5rem] w-full max-w-lg relative z-10 overflow-hidden shadow-2xl">
-            <div className="bg-orange-500 p-8 text-white">
-              <button
-                onClick={closeModal}
-                className="absolute top-6 right-6 text-white/80 hover:text-white"
-              >
-                <X size={24} />
-              </button>
-              <h3 className="text-2xl font-bold">
-                {isEditing ? "Edit Restaurant" : "New Restaurant"}
+            key={venue.id}
+            className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+          >
+            <div className="aspect-video relative bg-gray-100">
+              {venue.image && venue.image.startsWith("/uploads") ? (
+                <img
+                  src={`http://localhost:3000${venue.image}`}
+                  alt={venue.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-6xl">
+                  {venue.image || "🍽️"}
+                </div>
+              )}
+              <div className="absolute top-2 right-2 flex gap-2">
+                <button
+                  onClick={() => handleEditClick(venue)}
+                  className="p-2 bg-white rounded-lg shadow hover:bg-gray-50"
+                >
+                  <Edit size={16} className="text-gray-600" />
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(venue.id)}
+                  className="p-2 bg-white rounded-lg shadow hover:bg-red-50"
+                >
+                  <Trash2 size={16} className="text-red-500" />
+                </button>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-lg text-gray-800">
+                  {venue.name}
+                </h3>
+                <div className="flex items-center gap-1 text-amber-500">
+                  <Star size={14} fill="currentColor" />
+                  <span className="text-sm font-medium">{venue.rating}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-gray-500 text-sm mb-2">
+                <MapPin size={14} />
+                <span>{venue.location}</span>
+              </div>
+              <span className="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded">
+                {venue.type}
+              </span>
+              <p className="mt-2 text-gray-800 font-bold">{venue.price}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
+              <h3 className="text-xl font-bold text-gray-800">
+                {isEditing ? "Edit Restaurant" : "Add New Restaurant"}
               </h3>
-              <p className="opacity-80 text-sm">
-                Add restaurant details for your users.
-              </p>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
             </div>
 
-            <div className="p-8 space-y-4">
-              <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* Image Upload */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Restaurant Image
+                </label>
+                <div className="mt-2 border-2 border-dashed border-gray-200 rounded-xl p-4">
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          setImageFile(null);
+                        }}
+                        className="absolute top-2 right-2 p-1 bg-white rounded-full shadow"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-4xl mb-3">
+                      {formData.image || "🍽️"}
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Restaurant Name
+                </label>
+                <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  type="text"
+                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Location
+                </label>
+                <input
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  type="text"
+                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-gray-400 uppercase">
-                    Restaurant Image
+                    Cuisine Type
                   </label>
-                  <div className="mt-2">
-                    {imagePreview ? (
-                      <div className="relative w-full h-32 rounded-2xl overflow-hidden mb-3">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => {
-                            setImageFile(null);
-                            setImagePreview(null);
-                          }}
-                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="w-full h-32 bg-gray-100 rounded-2xl flex items-center justify-center text-4xl mb-3">
-                        {formData.image || "🍽️"}
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="w-full p-4 bg-gray-50 rounded-2xl outline-none cursor-pointer"
-                    />
-                  </div>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  >
+                    <option value="Italian">Italian</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="Indian">Indian</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="Mexican">Mexican</option>
+                    <option value="Thai">Thai</option>
+                    <option value="American">American</option>
+                    <option value="French">French</option>
+                    <option value="Mediterranean">Mediterranean</option>
+                  </select>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-400 uppercase">
-                    Restaurant Name
+                    Price Range
                   </label>
                   <input
-                    name="name"
-                    value={formData.name}
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    type="text"
+                    placeholder="e.g. $$ - $$$"
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Cuisine
+                </label>
+                <input
+                  name="cuisine"
+                  value={formData.cuisine}
+                  onChange={handleInputChange}
+                  type="text"
+                  placeholder="e.g. Pizza, Pasta, Asian"
+                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="3"
+                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    Phone
+                  </label>
+                  <input
+                    name="phone"
+                    value={formData.phone}
                     onChange={handleInputChange}
                     type="text"
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
@@ -307,96 +440,20 @@ const RestaurantManagement = () => {
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-400 uppercase">
-                    Location
+                    Email
                   </label>
                   <input
-                    name="location"
-                    value={formData.location}
+                    name="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    type="text"
+                    type="email"
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase">
-                      Cuisine
-                    </label>
-                    <select
-                      name="cuisine"
-                      value={formData.cuisine}
-                      onChange={handleInputChange}
-                      className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    >
-                      <option value="Italian">Italian</option>
-                      <option value="Chinese">Chinese</option>
-                      <option value="Indian">Indian</option>
-                      <option value="Mexican">Mexican</option>
-                      <option value="Japanese">Japanese</option>
-                      <option value="American">American</option>
-                      <option value="Thai">Thai</option>
-                      <option value="French">French</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase">
-                      Price Range
-                    </label>
-                    <select
-                      name="priceRange"
-                      value={formData.priceRange}
-                      onChange={handleInputChange}
-                      className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    >
-                      <option value="$">$ (Budget)</option>
-                      <option value="$$">$$ (Moderate)</option>
-                      <option value="$$$">$$$ (Upscale)</option>
-                      <option value="$$$$">$$$$ (Fine Dining)</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    rows="2"
-                  ></textarea>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase">
-                      Phone
-                    </label>
-                    <input
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      type="text"
-                      className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase">
-                      Email
-                    </label>
-                    <input
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      type="text"
-                      className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    />
-                  </div>
                 </div>
               </div>
 
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading}
                 className="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold text-lg shadow-lg mt-4"
               >
@@ -406,7 +463,7 @@ const RestaurantManagement = () => {
                     ? "Update Restaurant"
                     : "Create Restaurant"}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -414,4 +471,4 @@ const RestaurantManagement = () => {
   );
 };
 
-export default RestaurantManagement;
+export default VenueManagement;

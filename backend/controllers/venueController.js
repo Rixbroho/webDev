@@ -1,19 +1,20 @@
-const Restaurant = require("../models/venueModel");
+const Venue = require("../models/venueModel");
 
-const createRestaurant = async (req, res) => {
+const createVenue = async (req, res) => {
   try {
     const {
       name,
       location,
-      cuisine,
-      priceRange,
+      type,
+      price,
       rating,
+      cuisine,
       description,
       phone,
       email,
     } = req.body;
 
-    if (!name || !location || !cuisine || !priceRange) {
+    if (!name || !location || !type || !price) {
       return res.status(400).json({ message: "All fields required" });
     }
 
@@ -23,109 +24,101 @@ const createRestaurant = async (req, res) => {
       image = `/uploads/${req.files[0].filename}`;
     }
 
-    const restaurant = await Restaurant.create({
+    const venue = await Venue.create({
       name,
       location,
-      cuisine,
-      priceRange,
+      type,
+      price,
       rating: rating || 5.0,
       image,
-      description,
-      phone,
-      email,
+      cuisine: cuisine || "",
+      description: description || "",
+      phone: phone || "",
+      email: email || "",
     });
 
     res.status(201).json({
       success: true,
-      restaurant,
+      venue,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const getAllRestaurants = async (req, res) => {
+const getAllVenues = async (req, res) => {
   try {
-    const restaurants = await Restaurant.findAll();
-    res.json({ success: true, restaurants });
+    const venues = await Venue.findAll();
+    res.json({ success: true, venues });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const updateRestaurant = async (req, res) => {
+const updateVenue = async (req, res) => {
   try {
     const { id } = req.params;
     const {
       name,
       location,
-      cuisine,
-      priceRange,
+      type,
+      price,
       rating,
+      availability,
+      cuisine,
       description,
       phone,
       email,
-      availability,
     } = req.body;
 
-    const restaurant = await Restaurant.findByPk(id);
-    if (!restaurant)
-      return res.status(404).json({ message: "Restaurant not found" });
+    const venue = await Venue.findByPk(id);
+    if (!venue) return res.status(404).json({ message: "Venue not found" });
 
     // Handle image upload - use new file path or keep existing
     let updateData = {
       name,
       location,
-      cuisine,
-      priceRange,
+      type,
+      price,
       rating,
+      availability,
+      cuisine,
       description,
       phone,
       email,
-      availability,
     };
     if (req.files && req.files.length > 0) {
       updateData.image = `/uploads/${req.files[0].filename}`;
     }
 
-    await restaurant.update(updateData);
+    await venue.update(updateData);
 
-    res.json({
-      success: true,
-      message: "Restaurant updated successfully",
-      restaurant,
-    });
+    res.json({ success: true, message: "Venue updated successfully", venue });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const deleteRestaurant = async (req, res) => {
+const deleteVenue = async (req, res) => {
   try {
     const { id } = req.params;
-    const restaurant = await Restaurant.findByPk(id);
+    const venue = await Venue.findByPk(id);
 
-    if (!restaurant)
-      return res.status(404).json({ message: "Restaurant not found" });
+    if (!venue) return res.status(404).json({ message: "Venue not found" });
 
-    await restaurant.destroy();
-    res.json({ success: true, message: "Restaurant deleted successfully" });
+    await venue.destroy();
+    res.json({ success: true, message: "Venue deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Keep old function names as aliases for backward compatibility
-const createVenue = createRestaurant;
-const getAllVenues = getAllRestaurants;
-const updateVenue = updateRestaurant;
-const deleteVenue = deleteRestaurant;
-
+// Update your exports
 module.exports = {
-  createRestaurant,
-  getAllRestaurants,
-  updateRestaurant,
-  deleteRestaurant,
+  createRestaurant: createVenue,
+  getAllRestaurants: getAllVenues,
+  updateRestaurant: updateVenue,
+  deleteRestaurant: deleteVenue,
   createVenue,
   getAllVenues,
   updateVenue,

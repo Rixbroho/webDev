@@ -71,62 +71,54 @@ export const getUserById = (userId) => API.get(`/user/getusersbyid/${userId}`);
 export const deleteUser = (userId) =>
   API.delete(`/user/deleteuserbyid/${userId}`);
 
-// Restaurant API calls (recommended)
+// Restaurant/Venue API calls - using /venue endpoint but with restaurant terminology
+// The backend still uses /venue route but we're treating venues as restaurants
 export const createRestaurant = (restaurantData) => {
+  // Check if restaurantData is FormData (contains file)
   if (restaurantData instanceof FormData) {
-    return API.post("/restaurant", restaurantData, {
+    return API.post("/venue", restaurantData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   }
-  return API.post("/restaurant", restaurantData);
+  return API.post("/venue", restaurantData);
 };
+
+// Keep venue functions for backward compatibility
+export const createVenue = createRestaurant;
 
 export const updateRestaurant = (id, restaurantData) => {
   if (restaurantData instanceof FormData) {
-    return API.put(`/restaurant/${id}`, restaurantData, {
+    return API.put(`/venue/${id}`, restaurantData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   }
-  return API.put(`/restaurant/${id}`, restaurantData);
+  return API.put(`/venue/${id}`, restaurantData);
 };
 
-export const deleteRestaurant = (id) => API.delete(`/restaurant/${id}`);
+// Keep venue functions for backward compatibility
+export const updateVenue = updateRestaurant;
 
-export const getAllRestaurants = () => API.get("/restaurant");
+export const deleteRestaurant = (id) => API.delete(`/venue/${id}`);
 
-// Old Venue API calls (backward compatibility - still work)
-export const createVenue = (venueData) => {
-  if (venueData instanceof FormData) {
-    return API.post("/venue", venueData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  }
-  return API.post("/venue", venueData);
-};
+// Keep for backward compatibility
+export const deleteVenue = deleteRestaurant;
 
-export const updateVenue = (id, venueData) => {
-  if (venueData instanceof FormData) {
-    return API.put(`/venue/${id}`, venueData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  }
-  return API.put(`/venue/${id}`, venueData);
-};
+export const getAllRestaurants = () => API.get("/venue");
 
-export const deleteVenue = (id) => API.delete(`/venue/${id}`);
+// Keep for backward compatibility
+export const getAllVenues = getAllRestaurants;
 
-export const getAllVenues = () => API.get("/venue");
+// Get bookings for a specific restaurant on a date (for time slot availability)
+export const getRestaurantBookings = (restaurantId, date) =>
+  API.get("/booking/restaurant", { params: { restaurantId, date } });
+
+// Keep for backward compatibility
+export const getVenueBookings = getRestaurantBookings;
 
 // Booking API calls
 export const createBooking = (bookingData) => API.post("/booking", bookingData);
 
 export const getUserBookings = () => API.get("/booking/user");
-
-export const getRestaurantBookings = (restaurantId, date) =>
-  API.get("/booking/restaurant", { params: { restaurantId, date } });
-
-// Keep old function name for backward compatibility
-export const getVenueBookings = getRestaurantBookings;
 
 export const getAllBookings = () => API.get("/booking");
 
