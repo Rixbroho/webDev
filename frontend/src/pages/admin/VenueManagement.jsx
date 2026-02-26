@@ -17,6 +17,7 @@ import {
   getAllCuisines,
 } from "../../services/api";
 import { toast } from "react-toastify";
+import LocationPicker from "../components/LocationPicker";
 
 const VenueManagement = () => {
   const [venues, setVenues] = useState([]);
@@ -44,9 +45,20 @@ const VenueManagement = () => {
     email: "",
     city: "Kathmandu",
     area: "",
+    latitude: "",
+    longitude: "",
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Handle location change from map
+  const handleLocationChange = (lat, lng) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lng.toString(),
+    }));
+  };
 
   const fetchVenues = async () => {
     try {
@@ -129,6 +141,8 @@ const VenueManagement = () => {
       email: venue.email || "",
       city: venue.city || "Kathmandu",
       area: venue.area || "",
+      latitude: venue.latitude || "",
+      longitude: venue.longitude || "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -168,6 +182,8 @@ const VenueManagement = () => {
       data.append("email", formData.email);
       data.append("city", formData.city);
       data.append("area", formData.area);
+      data.append("latitude", formData.latitude);
+      data.append("longitude", formData.longitude);
 
       // Append cuisine IDs for multi-cuisine support
       if (formData.cuisineIds && formData.cuisineIds.length > 0) {
@@ -214,6 +230,8 @@ const VenueManagement = () => {
       email: "",
       city: "Kathmandu",
       area: "",
+      latitude: "",
+      longitude: "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -574,6 +592,25 @@ const VenueManagement = () => {
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                   />
                 </div>
+              </div>
+
+              {/* Location Picker */}
+              <div>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Pick Location on Map
+                </label>
+                <div className="mt-2">
+                  <LocationPicker
+                    latitude={parseFloat(formData.latitude) || 27.7172}
+                    longitude={parseFloat(formData.longitude) || 85.324}
+                    onLocationChange={handleLocationChange}
+                  />
+                </div>
+                {formData.latitude && formData.longitude && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Selected: {formData.latitude}, {formData.longitude}
+                  </p>
+                )}
               </div>
 
               <button

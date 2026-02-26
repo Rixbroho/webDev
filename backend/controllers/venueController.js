@@ -185,35 +185,47 @@ const getAllVenues = async (req, res) => {
         order = [["createdAt", "DESC"]];
     }
 
-    // Build include array dynamically
-    const include = [
-      {
-        model: Cuisine,
-        as: "cuisines",
-        through: { attributes: [] },
-      },
-    ];
+    // Build include array - handle potential association issues
+    let include = [];
 
-    if (cuisine) {
-      const cuisineList = cuisine.split(",").map((c) => c.trim());
-      include[0].where = {
-        name: {
-          [Op.or]: cuisineList.map((c) => ({ [Op.iLike]: `%${c}%` })),
+    try {
+      // Try to include cuisines if the association exists
+      include = [
+        {
+          model: Cuisine,
+          as: "cuisines",
+          through: { attributes: [] },
+          required: false,
         },
-      };
-      // when filtering by cuisine we only want venues that have matching cuisine
-      include[0].required = true;
+      ];
+
+      if (cuisine) {
+        const cuisineList = cuisine.split(",").map((c) => c.trim());
+        // Fix: Properly construct Op.or array for Sequelize
+        include[0].where = {
+          [Op.or]: cuisineList.map((c) => ({ name: { [Op.iLike]: `%${c}%` } })),
+        };
+        // when filtering by cuisine we only want venues that have matching cuisine
+        include[0].required = true;
+      }
+    } catch (includeError) {
+      console.error("Error setting up cuisine include:", includeError.message);
+      // Continue without cuisine include if it fails
     }
 
     if (dish) {
-      include.push({
-        model: Dish,
-        as: "dishes",
-        where: {
-          name: { [Op.iLike]: `%${dish}%` },
-        },
-        required: true,
-      });
+      try {
+        include.push({
+          model: Dish,
+          as: "dishes",
+          where: {
+            name: { [Op.iLike]: `%${dish}%` },
+          },
+          required: true,
+        });
+      } catch (dishError) {
+        console.error("Error setting up dish include:", dishError.message);
+      }
     }
 
     // Query venues with includes and where clause
@@ -250,23 +262,43 @@ const getAllVenues = async (req, res) => {
       }
     }
 
-    // Get filters data
-    const allVenues = await Venue.findAll({ attributes: ["city", "area"] });
-    const cities = [...new Set(allVenues.map((v) => v.city).filter(Boolean))];
-    const areas = [...new Set(allVenues.map((v) => v.area).filter(Boolean))];
+    // Get filters data - wrap in try-catch to prevent crash
+    let cities = [];
+    let areas = [];
+    let cuisineNames = [];
 
-    // Get all cuisines
-    const allCuisines = await Cuisine.findAll();
+    try {
+      const allVenues = await Venue.findAll({ attributes: ["city", "area"] });
+      cities = [...new Set(allVenues.map((v) => v.city).filter(Boolean))];
+      areas = [...new Set(allVenues.map((v) => v.area).filter(Boolean))];
+    } catch (filterError) {
+      console.error("Error getting filter data:", filterError.message);
+    }
 
-    // Get all unique cuisine names from junction table
-    const restaurantCuisines = await RestaurantCuisine.findAll({
-      include: [{ model: Cuisine }],
-    });
-    const cuisineNames = [
-      ...new Set(
-        restaurantCuisines.map((rc) => rc.Cuisine?.name).filter(Boolean),
-      ),
-    ];
+    // Get all cuisines - wrap in try-catch
+    try {
+      const allCuisines = await Cuisine.findAll();
+      cuisineNames = allCuisines.map((c) => c.name);
+    } catch (cuisineError) {
+      console.error("Error getting cuisines:", cuisineError.message);
+    }
+
+    // Try to get cuisine names from junction table, but don't fail if it doesn't work
+    try {
+      const restaurantCuisines = await RestaurantCuisine.findAll({
+        include: [{ model: Cuisine, required: false }],
+      });
+      const rcNames = [
+        ...new Set(
+          restaurantCuisines.map((rc) => rc.Cuisine?.name).filter(Boolean),
+        ),
+      ];
+      if (rcNames.length > 0) {
+        cuisineNames = rcNames;
+      }
+    } catch (rcError) {
+      console.error("Error getting restaurant cuisines:", rcError.message);
+    }
 
     res.json({
       success: true,
@@ -274,15 +306,18 @@ const getAllVenues = async (req, res) => {
       filters: {
         cities,
         areas,
-        cuisines:
-          cuisineNames.length > 0
-            ? cuisineNames
-            : allCuisines.map((c) => c.name),
+        cuisines: cuisineNames,
       },
       total: venues.length,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in getAllVenues:", error);
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      venues: [],
+      filters: { cities: [], areas: [], cuisines: [] },
+    });
   }
 };
 

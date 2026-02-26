@@ -40,6 +40,19 @@ Cuisine.belongsToMany(Restaurant, {
   foreignKey: "cuisineId",
 });
 
+// Expose associations on the junction table so that queries like
+// RestaurantCuisine.findAll({ include: [Cuisine] }) work without errors.
+RestaurantCuisine.belongsTo(Cuisine, {
+  foreignKey: "cuisineId",
+  as: "Cuisine",
+});
+RestaurantCuisine.belongsTo(Restaurant, {
+  foreignKey: "restaurantId",
+  as: "Restaurant",
+});
+Cuisine.hasMany(RestaurantCuisine, { foreignKey: "cuisineId" });
+Restaurant.hasMany(RestaurantCuisine, { foreignKey: "restaurantId" });
+
 // Restaurant - Dish (One-to-Many)
 Restaurant.hasMany(Dish, { foreignKey: "restaurantId", as: "dishes" });
 Dish.belongsTo(Restaurant, { foreignKey: "restaurantId" });
