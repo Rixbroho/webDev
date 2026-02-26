@@ -7,39 +7,43 @@ import {
   Star,
   Search,
   X,
-  LayoutGrid,
-  Menu,
-  ChevronRight,
-  Utensils,
+  ChevronDown,
 } from "lucide-react";
 import {
   createRestaurant,
   getAllRestaurants,
   updateRestaurant,
   deleteRestaurant,
+  getAllCuisines,
 } from "../../services/api";
 import { toast } from "react-toastify";
 
 const VenueManagement = () => {
   const [venues, setVenues] = useState([]);
+  const [cuisines, setCuisines] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentVenueId, setCurrentVenueId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
 
-  // Form State - Updated for restaurant fields
+  // Form State
   const [formData, setFormData] = useState({
     name: "",
     location: "",
     type: "Italian",
     price: "",
+    priceRange: "$$",
     rating: 5.0,
     image: "🍽️",
     cuisine: "",
+    cuisineIds: [],
     description: "",
     phone: "",
     email: "",
+    city: "Kathmandu",
+    area: "",
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -55,13 +59,44 @@ const VenueManagement = () => {
     }
   };
 
+  const fetchCuisines = async () => {
+    try {
+      const response = await getAllCuisines();
+      if (response.data.success) {
+        setCuisines(response.data.cuisines || []);
+      }
+    } catch (error) {
+      console.error("Failed to load cuisines", error);
+    }
+  };
+
   useEffect(() => {
     fetchVenues();
+    fetchCuisines();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCuisineToggle = (cuisineId) => {
+    setFormData((prev) => {
+      const currentIds = prev.cuisineIds || [];
+      if (currentIds.includes(cuisineId)) {
+        return {
+          ...prev,
+          cuisineIds: currentIds.filter((id) => id !== cuisineId),
+        };
+      } else {
+        return { ...prev, cuisineIds: [...currentIds, cuisineId] };
+      }
+    });
+  };
+
+  const getSelectedCuisineNames = () => {
+    const selected = cuisines.filter((c) => formData.cuisineIds.includes(c.id));
+    return selected.map((c) => c.name).join(", ") || "Select cuisines...";
   };
 
   const handleImageChange = (e) => {
@@ -83,13 +118,17 @@ const VenueManagement = () => {
       name: venue.name,
       location: venue.location,
       type: venue.type,
-      price: venue.price,
+      price: venue.price || "",
+      priceRange: venue.priceRange || "$$",
       rating: venue.rating,
       image: venue.image || "🍽️",
       cuisine: venue.cuisine || "",
+      cuisineIds: venue.cuisineIds || [],
       description: venue.description || "",
       phone: venue.phone || "",
       email: venue.email || "",
+      city: venue.city || "Kathmandu",
+      area: venue.area || "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -120,12 +159,22 @@ const VenueManagement = () => {
       data.append("location", formData.location);
       data.append("type", formData.type);
       data.append("price", formData.price);
+      data.append("priceRange", formData.priceRange);
       data.append("rating", formData.rating);
       data.append("image", formData.image);
       data.append("cuisine", formData.cuisine);
       data.append("description", formData.description);
       data.append("phone", formData.phone);
       data.append("email", formData.email);
+      data.append("city", formData.city);
+      data.append("area", formData.area);
+
+      // Append cuisine IDs for multi-cuisine support
+      if (formData.cuisineIds && formData.cuisineIds.length > 0) {
+        formData.cuisineIds.forEach((id) => {
+          data.append("cuisineIds", id);
+        });
+      }
 
       if (imageFile) {
         data.append("image", imageFile);
@@ -140,26 +189,34 @@ const VenueManagement = () => {
       }
 
       setIsModalOpen(false);
-      setFormData({
-        name: "",
-        location: "",
-        type: "Italian",
-        price: "",
-        rating: 5.0,
-        image: "🍽️",
-        cuisine: "",
-        description: "",
-        phone: "",
-        email: "",
-      });
-      setImageFile(null);
-      setImagePreview(null);
+      resetForm();
       fetchVenues();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to save restaurant");
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      location: "",
+      type: "Italian",
+      price: "",
+      priceRange: "$$",
+      rating: 5.0,
+      image: "🍽️",
+      cuisine: "",
+      cuisineIds: [],
+      description: "",
+      phone: "",
+      email: "",
+      city: "Kathmandu",
+      area: "",
+    });
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const filteredVenues = venues.filter(
@@ -182,20 +239,7 @@ const VenueManagement = () => {
         <button
           onClick={() => {
             setIsEditing(false);
-            setFormData({
-              name: "",
-              location: "",
-              type: "Italian",
-              price: "",
-              rating: 5.0,
-              image: "🍽️",
-              cuisine: "",
-              description: "",
-              phone: "",
-              email: "",
-            });
-            setImageFile(null);
-            setImagePreview(null);
+            resetForm();
             setIsModalOpen(true);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -271,7 +315,14 @@ const VenueManagement = () => {
               <span className="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded">
                 {venue.type}
               </span>
-              <p className="mt-2 text-gray-800 font-bold">{venue.price}</p>
+              <div className="mt-2 flex justify-between items-center">
+                <p className="text-gray-800 font-bold">
+                  {venue.priceRange || venue.price || "$$"}
+                </p>
+                {venue.cuisine && (
+                  <p className="text-gray-500 text-xs">{venue.cuisine}</p>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -380,36 +431,77 @@ const VenueManagement = () => {
                     <option value="American">American</option>
                     <option value="French">French</option>
                     <option value="Mediterranean">Mediterranean</option>
+                    <option value="Fast Food">Fast Food</option>
+                    <option value="Cafe">Cafe</option>
+                    <option value="Bakery">Bakery</option>
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-400 uppercase">
                     Price Range
                   </label>
-                  <input
-                    name="price"
-                    value={formData.price}
+                  <select
+                    name="priceRange"
+                    value={formData.priceRange}
                     onChange={handleInputChange}
-                    type="text"
-                    placeholder="e.g. $$ - $$$"
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                    required
-                  />
+                  >
+                    <option value="$">$ - Cheap</option>
+                    <option value="$$">$$ - Moderate</option>
+                    <option value="$$$">$$$ - Expensive</option>
+                    <option value="$$$$">$$$$ - Very Expensive</option>
+                  </select>
                 </div>
               </div>
 
+              {/* Multi-select Cuisine Dropdown */}
               <div>
                 <label className="text-xs font-bold text-gray-400 uppercase">
-                  Cuisine
+                  Cuisines (Select Multiple)
                 </label>
-                <input
-                  name="cuisine"
-                  value={formData.cuisine}
-                  onChange={handleInputChange}
-                  type="text"
-                  placeholder="e.g. Pizza, Pasta, Asian"
-                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
-                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowCuisineDropdown(!showCuisineDropdown)}
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none flex justify-between items-center"
+                  >
+                    <span className="text-gray-600">
+                      {getSelectedCuisineNames()}
+                    </span>
+                    <ChevronDown
+                      size={20}
+                      className={`text-gray-400 transition-transform ${
+                        showCuisineDropdown ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {showCuisineDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {cuisines.length > 0 ? (
+                        cuisines.map((cuisine) => (
+                          <label
+                            key={cuisine.id}
+                            className="flex items-center p-3 hover:bg-gray-50 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.cuisineIds.includes(cuisine.id)}
+                              onChange={() => handleCuisineToggle(cuisine.id)}
+                              className="mr-3 w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                            />
+                            <span className="text-gray-700">
+                              {cuisine.name}
+                            </span>
+                          </label>
+                        ))
+                      ) : (
+                        <p className="p-3 text-gray-400 text-sm">
+                          No cuisines available
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -447,6 +539,38 @@ const VenueManagement = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     type="email"
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    City
+                  </label>
+                  <select
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
+                  >
+                    <option value="Kathmandu">Kathmandu</option>
+                    <option value="Pokhara">Pokhara</option>
+                    <option value="Lalitpur">Lalitpur</option>
+                    <option value="Bhaktapur">Bhaktapur</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    Area
+                  </label>
+                  <input
+                    name="area"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    type="text"
+                    placeholder="e.g. Thamel"
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                   />
                 </div>

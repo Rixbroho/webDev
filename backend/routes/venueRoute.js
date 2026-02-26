@@ -6,6 +6,7 @@ const {
   getAllRestaurants,
   updateRestaurant,
   deleteRestaurant,
+  getVenueById,
   createVenue,
   getAllVenues,
   updateVenue,
@@ -24,6 +25,7 @@ router.post(
   createRestaurant,
 );
 router.get("/restaurant", getAllRestaurants);
+router.get("/restaurant/:id", getVenueById);
 router.put(
   "/restaurant/:id",
   authGuard,

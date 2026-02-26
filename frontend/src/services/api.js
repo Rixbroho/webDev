@@ -71,10 +71,8 @@ export const getUserById = (userId) => API.get(`/user/getusersbyid/${userId}`);
 export const deleteUser = (userId) =>
   API.delete(`/user/deleteuserbyid/${userId}`);
 
-// Restaurant/Venue API calls - using /venue endpoint but with restaurant terminology
-// The backend still uses /venue route but we're treating venues as restaurants
+// Restaurant/Venue API calls
 export const createRestaurant = (restaurantData) => {
-  // Check if restaurantData is FormData (contains file)
   if (restaurantData instanceof FormData) {
     return API.post("/venue", restaurantData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -83,7 +81,6 @@ export const createRestaurant = (restaurantData) => {
   return API.post("/venue", restaurantData);
 };
 
-// Keep venue functions for backward compatibility
 export const createVenue = createRestaurant;
 
 export const updateRestaurant = (id, restaurantData) => {
@@ -95,24 +92,23 @@ export const updateRestaurant = (id, restaurantData) => {
   return API.put(`/venue/${id}`, restaurantData);
 };
 
-// Keep venue functions for backward compatibility
 export const updateVenue = updateRestaurant;
 
 export const deleteRestaurant = (id) => API.delete(`/venue/${id}`);
 
-// Keep for backward compatibility
 export const deleteVenue = deleteRestaurant;
 
-export const getAllRestaurants = () => API.get("/venue");
+export const getAllRestaurants = (params) => API.get("/venue", { params });
 
-// Keep for backward compatibility
 export const getAllVenues = getAllRestaurants;
 
-// Get bookings for a specific restaurant on a date (for time slot availability)
+export const getRestaurantById = (id, params) =>
+  API.get(`/restaurant/${id}`, { params });
+
+// Get bookings for a specific restaurant on a date
 export const getRestaurantBookings = (restaurantId, date) =>
   API.get("/booking/restaurant", { params: { restaurantId, date } });
 
-// Keep for backward compatibility
 export const getVenueBookings = getRestaurantBookings;
 
 // Booking API calls
@@ -141,5 +137,74 @@ export const updateBookingStatus = (id, status) =>
 
 // Dashboard stats API
 export const getDashboardStats = () => API.get("/dashboard/stats");
+
+// ============== CUISINE API ==============
+export const getAllCuisines = () => API.get("/cuisine");
+
+export const getCuisineById = (id) => API.get(`/cuisine/${id}`);
+
+export const createCuisine = (cuisineData) => API.post("/cuisine", cuisineData);
+
+export const updateCuisine = (id, cuisineData) =>
+  API.put(`/cuisine/${id}`, cuisineData);
+
+export const deleteCuisine = (id) => API.delete(`/cuisine/${id}`);
+
+export const getRestaurantsByCuisine = (cuisineId) =>
+  API.get(`/cuisine/${cuisineId}/restaurants`);
+
+// Restaurant-Cuisine association
+export const assignCuisinesToRestaurant = (restaurantId, cuisineIds) =>
+  API.post(`/restaurant/${restaurantId}/cuisines`, { cuisineIds });
+
+export const getRestaurantCuisines = (restaurantId) =>
+  API.get(`/restaurant/${restaurantId}/cuisines`);
+
+export const removeCuisineFromRestaurant = (restaurantId, cuisineId) =>
+  API.delete(`/restaurant/${restaurantId}/cuisines/${cuisineId}`);
+
+// ============== DISH/MENU API ==============
+export const getDishesByRestaurant = (restaurantId) =>
+  API.get("/dishes/restaurant", { params: { restaurantId } });
+
+export const getAllDishes = (params) => API.get("/dishes", { params });
+
+export const getDishById = (id) => API.get(`/dishes/${id}`);
+
+export const createDish = (dishData) => {
+  if (dishData instanceof FormData) {
+    return API.post("/dishes", dishData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return API.post("/dishes", dishData);
+};
+
+export const updateDish = (id, dishData) => {
+  if (dishData instanceof FormData) {
+    return API.put(`/dishes/${id}`, dishData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return API.put(`/dishes/${id}`, dishData);
+};
+
+export const deleteDish = (id) => API.delete(`/dishes/${id}`);
+
+// ============== REVIEW API ==============
+export const createReview = (reviewData) => API.post("/reviews", reviewData);
+
+export const getRestaurantReviews = (restaurantId, params) =>
+  API.get(`/reviews/restaurant/${restaurantId}`, { params });
+
+export const getUserReviewForRestaurant = (restaurantId) =>
+  API.get(`/reviews/user/${restaurantId}`);
+
+export const updateReview = (id, reviewData) =>
+  API.put(`/reviews/${id}`, reviewData);
+
+export const deleteReview = (id) => API.delete(`/reviews/${id}`);
+
+export const getAllReviews = (params) => API.get("/reviews", { params });
 
 export default API;
