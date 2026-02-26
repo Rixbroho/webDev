@@ -15,6 +15,7 @@ import {
   ChevronUp,
   Navigation,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Nav from "../components/Nav";
 import ReviewForm from "../components/ReviewForm";
@@ -568,9 +569,10 @@ const Venues = ({ user, onLogout, setCurrentPage }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredVenues.map((venue) => (
-                <div
+                <Link
+                  to={`/restaurant/${venue.id}`}
                   key={venue.id}
-                  className="bg-white rounded-[2.5rem] border shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-orange-500/10 transition-all hover:-translate-y-2 group"
+                  className="block bg-white rounded-[2.5rem] border shadow-sm overflow-hidden hover:shadow-2xl hover:shadow-orange-500/10 transition-all hover:-translate-y-2 group"
                 >
                   <div className="aspect-video relative overflow-hidden">
                     {venue.image?.startsWith("/uploads") ? (
@@ -632,7 +634,10 @@ const Venues = ({ user, onLogout, setCurrentPage }) => {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleOpenReviewModal(venue)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleOpenReviewModal(venue);
+                        }}
                         className="flex items-center gap-1 text-orange-500 hover:text-orange-600"
                       >
                         <MessageSquare size={14} />
@@ -650,14 +655,17 @@ const Venues = ({ user, onLogout, setCurrentPage }) => {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleOpenBookingModal(venue)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleOpenBookingModal(venue);
+                        }}
                         className="px-6 py-3 bg-gradient-to-r from-orange-500 to-rose-500 text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105"
                       >
                         Reserve
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

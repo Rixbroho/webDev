@@ -1,171 +1,43 @@
-# Advanced Restaurant Discovery System - Implementation Plan
+# DineSavvy Restaurant Details Page Implementation
 
-## Project Overview
+## Information Gathered:
 
-Implement a complete Advanced Restaurant Discovery System with location, cuisine, and dish/menu management along with advanced search and filtering capabilities.
+- **App.jsx**: Uses React Router with routes `/dashboard`, `/user`, etc.
+- **Venues.jsx**: Contains restaurant cards with booking modal functionality
+- **API**: `getRestaurantById` is already available for fetching single restaurant data
 
----
+## Plan:
 
-## Phase 1: Backend Models & Database
+### Step 1: Create RestaurantDetails Component
 
-### 1.1 Update Restaurant Model (Location System)
+- [x] Create `frontend/src/pages/users/RestaurantDetails.jsx`
+- [x] Hero image section with restaurant image
+- [x] Restaurant name, category (cuisine), and location display
+- [x] Detailed description section
+- [x] Rating display with stars
+- [x] Reviews list section
+- [x] Booking sidebar with date/time picker
+- [x] Use `useParams` from react-router-dom to get restaurant ID
+- [x] Fetch restaurant data using `getRestaurantById` API
 
-- [ ] Add `city` field (required)
-- [ ] Add `area` field
-- [ ] Add `fullAddress` field
-- [ ] Add `latitude` field (DECIMAL)
-- [ ] Add `longitude` field (DECIMAL)
-- [ ] Update existing model: Backend/models/venueModel.js
+### Step 2: Update Venues.jsx (Restaurant Cards)
 
-### 1.2 Create Cuisine Model
+- [x] Wrap restaurant card in `<Link to={`/restaurant/${venue.id}`}>`
+- [x] Keep existing booking functionality as is
 
-- [ ] Create: Backend/models/cuisineModel.js
-- [ ] Fields: id, name (unique, required)
-- [ ] Create: Backend/models/restaurantCuisineModel.js (junction table)
-- [ ] Update: Backend/index.js to define associations
+### Step 3: Update App.jsx (Routing)
 
-### 1.3 Create Dish/Menu Model
+- [x] Import RestaurantDetails component
+- [x] Add route: `<Route path="/restaurant/:id" element={<RestaurantDetails />} />`
 
-- [ ] Create: Backend/models/dishModel.js
-- [ ] Fields: name, price, description, category (Veg/Non-Veg/Dessert/Beverage), restaurantId
-- [ ] Define Restaurant hasMany Dish relationship
+### Step 4: UI Consistency
 
----
+- [x] Use Orange/White/Dark Grey color scheme
+- [x] Match existing design patterns (rounded corners, shadows, typography)
+- [x] Ensure responsive layout
 
-## Phase 2: Backend Controllers & Routes
+## Followup Steps:
 
-### 2.1 Cuisine Controller
-
-- [ ] Create: Backend/controllers/cuisineController.js
-- [ ] Create CRUD operations: createCuisine, getAllCuisines, updateCuisine, deleteCuisine
-
-### 2.2 Cuisine Routes
-
-- [ ] Create: Backend/routes/cuisineRoute.js
-- [ ] Endpoints: GET, POST, PUT, DELETE /api/cuisine
-
-### 2.3 Restaurant-Cuisine Association Routes
-
-- [ ] POST /api/restaurant/:id/cuisines - Assign cuisines to restaurant
-- [ ] GET /api/restaurant/:id/cuisines - Get cuisines for restaurant
-- [ ] DELETE /api/restaurant/:id/cuisines/:cuisineId - Remove cuisine from restaurant
-
-### 2.4 Dish Controller
-
-- [ ] Create: Backend/controllers/dishController.js
-- [ ] Create CRUD operations: createDish, getDishesByRestaurant, updateDish, deleteDish
-
-### 2.5 Dish Routes
-
-- [ ] Create: Backend/routes/dishRoute.js
-- [ ] Endpoints: GET, POST, PUT, DELETE /api/dishes
-
-### 2.6 Update Restaurant Controller (Advanced Filtering)
-
-- [ ] Update: Backend/controllers/venueController.js
-- [ ] Add query parameter support: city, area, cuisine, dish, minRating, minPrice, maxPrice
-- [ ] Implement Sequelize include and where conditions
-
----
-
-## Phase 3: Frontend Services & API
-
-### 3.1 Update API Service
-
-- [ ] Update: frontend/src/services/api.js
-- [ ] Add: getAllCuisines, createCuisine, updateCuisine, deleteCuisine
-- [ ] Add: getRestaurantCuisines, assignCuisinesToRestaurant
-- [ ] Add: getDishesByRestaurant, createDish, updateDish, deleteDish
-- [ ] Update: getAllRestaurants to accept filter params
-
----
-
-## Phase 4: Frontend Components
-
-### 4.1 Create Filter Component
-
-- [ ] Create: frontend/src/pages/components/RestaurantFilters.jsx
-- [ ] City dropdown (auto-populated from restaurants)
-- [ ] Cuisine dropdown (from cuisine API)
-- [ ] Dish search input
-- [ ] Price range filter (min/max sliders)
-- [ ] Minimum rating filter (star rating)
-- [ ] Mobile responsive design
-
-### 4.2 Create Dish/Menu Component
-
-- [ ] Create: frontend/src/pages/users/RestaurantMenu.jsx
-- [ ] Display dishes grouped by category
-- [ ] Show dish details (name, price, description)
-- [ ] Filter by category
-
-### 4.3 Update Venues Page
-
-- [ ] Update: frontend/src/pages/users/Venues.jsx
-- [ ] Integrate RestaurantFilters component
-- [ ] Implement auto-fetch on filter change
-- [ ] Add loading states
-- [ ] Add "No results found" UI
-- [ ] Add sorting options (Highest Rated, Lowest Price, Newest)
-
----
-
-## Phase 5: Bonus Features
-
-### 5.1 Top Rated Badge
-
-- [ ] Add visual badge for restaurants with rating >= 4.5
-- [ ] Display on restaurant cards
-
-### 5.2 Most Popular Cuisine Section
-
-- [ ] Calculate most popular cuisine from restaurant data
-- [ ] Add section in Home.jsx or Venues.jsx
-
-### 5.3 Sorting Options
-
-- [ ] Highest Rated
-- [ ] Lowest Price
-- [ ] Newest (by creation date)
-
----
-
-## Implementation Order
-
-1. Backend Models (Restaurant update → Cuisine → Dish)
-2. Backend Index (associations)
-3. Cuisine Controller & Routes
-4. Dish Controller & Routes
-5. Restaurant Controller (filtering)
-6. Frontend API updates
-7. Frontend Filter Component
-8. Frontend Menu Component
-9. Integration & Testing
-
----
-
-## API Endpoints Summary
-
-### Cuisine
-
-- `GET /api/cuisine` - Get all cuisines
-- `POST /api/cuisine` - Create cuisine (admin)
-- `PUT /api/cuisine/:id` - Update cuisine (admin)
-- `DELETE /api/cuisine/:id` - Delete cuisine (admin)
-
-### Restaurant-Cuisine
-
-- `POST /api/restaurant/:id/cuisines` - Assign cuisines
-- `GET /api/restaurant/:id/cuisines` - Get restaurant cuisines
-- `DELETE /api/restaurant/:id/cuisines/:cuisineId` - Remove cuisine
-
-### Dish
-
-- `GET /api/dishes?restaurantId=1` - Get dishes by restaurant
-- `POST /api/dishes` - Create dish (admin)
-- `PUT /api/dishes/:id` - Update dish (admin)
-- `DELETE /api/dishes/:id` - Delete dish (admin)
-
-### Restaurant (Updated)
-
-- `GET /api/restaurant?city=&area=&cuisine=&dish=&minRating=&minPrice=&maxPrice=&sort=`
+- [x] Test navigation from dashboard to restaurant details
+- [x] Verify booking functionality works on the details page
+- [x] Test responsive design on different screen sizes

@@ -10,7 +10,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // 1. Import your Home component
-import Home from "./pages/users/Home"; 
+import Home from "./pages/users/Home";
 import LogIn from "./pages/LogIn";
 import SignIn from "./pages/SignIn";
 import ForgetPassword from "./pages/ForgetPassword";
@@ -18,6 +18,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UserPages from "./pages/users";
+import RestaurantDetails from "./pages/users/RestaurantDetails";
 import ProtectedRoute from "./protected/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
@@ -69,7 +70,9 @@ function AppContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-emerald-500 flex items-center justify-center">
-        <div className="text-white text-2xl animate-pulse">Loading TurfTime...</div>
+        <div className="text-white text-2xl animate-pulse">
+          Loading TurfTime...
+        </div>
       </div>
     );
   }
@@ -101,8 +104,8 @@ function AppContent() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      
-        <Route path="/user" element={<UserPages />} />
+
+      <Route path="/user" element={<UserPages />} />
 
       <Route
         path="/dashboard"
@@ -112,7 +115,22 @@ function AppContent() {
           />
         }
       />
-      
+
+      <Route
+        path="/restaurant/:id"
+        element={
+          <ProtectedRoute
+            element={
+              <RestaurantDetails
+                user={user}
+                onLogout={handleLogout}
+                setCurrentPage={() => {}}
+              />
+            }
+          />
+        }
+      />
+
       <Route
         path="/admindashboard"
         element={
@@ -131,11 +149,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        theme="light"
-      />
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
       <AppContent />
     </Router>
   );
