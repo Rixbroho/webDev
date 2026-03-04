@@ -440,6 +440,7 @@ const VenueManagement = () => {
                     onChange={handleInputChange}
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                   >
+                    <option value="Nepali">Nepali</option>
                     <option value="Italian">Italian</option>
                     <option value="Chinese">Chinese</option>
                     <option value="Indian">Indian</option>
