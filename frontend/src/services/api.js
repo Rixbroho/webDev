@@ -50,8 +50,8 @@ export const verifyOtp = (email, otp) =>
 export const resetPassword = (email, otp, newPassword) =>
   API.post("/user/resetpassword", {
     email,
-    otp,
-    password: newPassword,
+    resetToken: otp,
+    newPassword,
   });
 
 export const getMe = () => API.get("/user/me");

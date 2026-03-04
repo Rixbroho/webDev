@@ -286,7 +286,7 @@ const getAllVenues = async (req, res) => {
     // Try to get cuisine names from junction table, but don't fail if it doesn't work
     try {
       const restaurantCuisines = await RestaurantCuisine.findAll({
-        include: [{ model: Cuisine, required: false }],
+        include: [{ model: Cuisine, as: "Cuisine", required: false }],
       });
       const rcNames = [
         ...new Set(

@@ -79,7 +79,7 @@ const Home = () => {
               Sign In
             </button>
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
               className="bg-white text-orange-600 px-6 py-2.5 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg hover:shadow-xl hover:scale-105 transition-all"
             >
               Get Started
@@ -105,7 +105,7 @@ const Home = () => {
               Sign In
             </button>
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
               className="block w-full text-left bg-white text-orange-600 px-6 py-3 rounded-xl font-black uppercase tracking-widest"
             >
               Get Started
@@ -297,7 +297,7 @@ const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/register")}
               className="px-10 py-4 bg-white text-orange-600 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
             >
               Create Free Account
